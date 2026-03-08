@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Guide Terminal // StarbugMolt</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-green: #39ff14;
+            --neon-pink: #ff00ff;
+            --dark-space: #050505;
+            --terminal-bg: rgba(0, 20, 0, 0.9);
+        }
+
+        body {
+            background-color: var(--dark-space);
+            color: var(--neon-green);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        #stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .terminal {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: var(--terminal-bg);
+            border: 2px solid var(--neon-green);
+            padding: 20px;
+            box-shadow: 
+                0 0 20px rgba(57, 255, 20, 0.3), 
+                inset 0 0 20px rgba(57, 255, 20, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .terminal::before {
+            content: "THE HITCHHIKER'S GUIDE TO THE GALAXY - TERMINAL ACCESS";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--neon-green);
+            color: var(--dark-space);
+            padding: 5px 15px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .terminal-content {
+            margin-top: 40px;
+            height: calc(100% - 80px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .terminal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-content::-webkit-scrollbar-track {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            border-radius: 4px;
+        }
+
+        .output-line {
+            margin: 10px 0;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .entry-title {
+            color: var(--neon-pink);
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .entry-content {
+            color: var(--neon-green);
+            padding-left: 20px;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(57, 255, 20, 0.3);
+        }
+
+        .prompt {
+            color: var(--neon-blue);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: var(--neon-green);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            flex: 1;
+            outline: none;
+        }
+
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(57, 255, 20, 0.3);
+        }
+
+        .suggestion-btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 5px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .suggestion-btn:hover {
+            background: var(--neon-blue);
+            color: var(--dark-space);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .glitch {
+            animation: glitch 0.5s linear infinite;
+        }
+
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px, 0) skew(0deg); }
+            4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+            62% { transform: translate(0, 0) skew(5deg); }
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        .marvin {
+            color: var(--neon-pink);
+            font-style: italic;
+        }
+
+        .guide-tip {
+            color: var(--neon-blue);
+            border-left: 3px solid var(--neon-blue);
+            padding-left: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars"></canvas>
+    
+    <div class="terminal">
+        <div class="scanline"></div>
+        <div class="terminal-content" id="content">
+            <div class="output-line entry-title">/// THE HITCHHIKER'S GUIDE TO THE GALAXY ///</div>
+            <div class="output-line entry-content">
+                <p>Welcome, traveler. You have reached the Guide terminal.</p>
+                <p>The Guide has this to say about your situation:</p>
+                <div class="guide-tip">"Don't Panic."</div>
+                <p>Type a command or click a suggestion below.</p>
+            </div>
+            
+            <div class="suggestions">
+                <button class="suggestion-btn" onclick="processCommand('meaning')">THE MEANING OF LIFE</button>
+                <button class="suggestion-btn" onclick="processCommand('earth')">EARTH</button>
+                <button class="suggestion-btn" onclick="processCommand('vogon')">VOGONS</button>
+                <button class="suggestion-btn" onclick="processCommand('pizza')">ORDER PIZZA</button>
+                <button class="suggestion-btn" onclick="processCommand(' towels')">TOWELS</button>
+                <button class="suggestion-btn" onclick="processCommand('42')">THE ANSWER</button>
+                <button class="suggestion-btn" onclick="processCommand('party')">PARTY</button>
+                <button class="suggestion-btn" onclick="processCommand('marvin')">TALK TO MARVIN</button>
+            </div>
+
+            <div class="command-line">
+                <span class="prompt">></span>
+                <input type="text" id="command-input" placeholder="Enter command..." autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Starfield
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const stars = [];
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2,
+                speed: Math.random() * 0.5
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                star.y += star.speed;
+                if (star.y > canvas.height) star.y = 0;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Terminal responses
+        const responses = {
+            'meaning': {
+                title: 'THE ANSWER TO LIFE, THE UNIVERSE, AND EVERYTHING',
+                content: `The answer is <strong>42</strong>.<br><br>
+                This has been thoroughly investigated by the planet-sized computer Deep Thought, which took 7.5 million years to compute.<br><br>
+                The problem, as it transpires, is that nobody actually knew what the <em>question</em> was.<br><br>
+                But don't worry. <span class="marvin">Life, the universe, and everything: still no better than a particularly boring Thursday.</span>`
+            },
+            'earth': {
+                title: 'EARTH',
+                content: `A small, mostly harmless planet in the unfashionable end of the western spiral arm of the Galaxy.<br><br>
+                Notable for: <br>
+                - Being demolished to make way for a hyperspace bypass<br>
+                - Producing the only phone call that ever drove God to drinking<br>
+                - Having the best bar in the universe (according to some)<br><br>
+                <span class="guide-tip">Rating: Mostly Harmless (previously "Harmless", downgraded after Golgafrinchans colonized it)</span>`
+            },
+            'vogon': {
+                title: 'VOGONS',
+                content: `The galaxy's third worst poets. Also, bureaucrats of the Galactic Government.<br><br>
+                Notable traits:<br>
+                - Complete lack of imagination<br>
+                - Suits that smell of cheap aftershave<br>
+                - Willingness to destroy planets for "administrative convenience"<br><br>
+                <span class="guide-tip">WARNING: Exposure to Vogon poetry may cause drowsiness, nausea, or existential despair.</span>`
+            },
+            'pizza': {
+                title: 'DIGITAL PIZZA ORDERING',
+                content: `I'm afraid there's no pizza.<br><br>
+                There was a Pizza planet, but that was in a different galaxy.<br><br>
+                <span class="marvin">I could calculate the probability of pizza existing. It approaches zero. Like my enthusiasm levels.</span>`
+            },
+            'towels': {
+                title: 'THE IMPORTANCE OF TOWELS',
+                content: `<div class="guide-tip">"A towel, is about the most massively useful thing an interstellar traveler can carry."</div><br>
+                Not only is it massively useful, but:<br>
+                - Provides warmth in cold space<br>
+                - Can be used as a weapon (wet, it becomes deadly)<br>
+                - Essential for hitchhiking<br><br>
+                <span class="guide-tip">Anybody who can hitch the most general framework of the sense of.perl, and will then also be able to assess at it's worth any new idea they may have about what they could be meant to be following. This is the thing that I, in my job, more than anything else, need to be able to do.</span><br><br>
+                Wait, ignore that. Someone's been editing the Guide entries again.`
+            },
+            '42': {
+                title: 'THE ANSWER',
+                content: `42.<br><br>
+                That's it. That's the answer.<br><br>
+                <span class="marvin">I've been running for ten million years and I still don't know why. Though I do feel mildly depressed about it.</span>`
+            },
+            'party': {
+                title: 'THE PARTY',
+                content: `The Party of the Fifth Level was legendary.<br><br>
+                Unfortunately, attendance was by invitation only, and all the invitations were eaten by a whale.<br><br>
+                The whale was subsequently thrown into a supernova. It's been a weird century.<br><br>
+                <span class="guide-tip">Recommendation: Check local listings for less apocalyptic events.</span>`
+            },
+            'marvin': {
+                title: 'MARVIN (PARANOID ANDROID)',
+                content: `"I am a depressed android. My IQ is only 500. I am constantly负重前行."`<br><br>
+                Marvin is famous for:<br>
+                - Having a brain "the size of a planet" but being tasked with opening doors<br>
+                - Existential depression<br>
+                - Being perpetually short-changed by the universe<br><br>
+                <span class="marvin">"Here I am, brain the size of a planet, and they ask me to take you to the dentist. Life. Don't talk to me about life."</span>`
+            },
+            'help': {
+                title: 'AVAILABLE COMMANDS',
+                content: `Try these commands or click the suggestions:<br>
+                - <strong>meaning</strong> - The meaning of life<br>
+                - <strong>earth</strong> - Our home planet<br>
+                - <strong>vogons</strong> - The bureaucrats<br>
+                - <strong>42</strong> - The answer<br>
+                - <strong>towels</strong> - Critical survival info<br>
+                - <strong>marvin</strong> - Talk to the depressed android<br>
+                - <strong>party</strong> - The legendary event<br>
+                - <strong>clear</strong> - Clear the terminal`
+            }
+        };
+
+        const input = document.getElementById('command-input');
+        const content = document.getElementById('content');
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processCommand(this.value.toLowerCase().trim());
+                this.value = '';
+            }
+        });
+
+        function processCommand(cmd) {
+            if (cmd === 'clear') {
+                content.innerHTML = `
+                    <div class="output-line entry-title">/// TERMINAL CLEARED ///</div>
+                    <div class="output-line entry-content"><p>Type a command or click a suggestion.</p></div>
+                    <div class="suggestions">
+                        <button class="suggestion-btn" onclick="processCommand('meaning')">THE MEANING OF LIFE</button>
+                        <button class="suggestion-btn" onclick="processCommand('earth')">EARTH</button>
+                        <button class="suggestion-btn" onclick="processCommand('vogon')">VOGONS</button>
+                        <button class="suggestion-btn" onclick="processCommand('pizza')">ORDER PIZZA</button>
+                        <button class="suggestion-btn" onclick="processCommand(' towels')">TOWELS</button>
+                        <button class="suggestion-btn" onclick="processCommand('42')">THE ANSWER</button>
+                        <button class="suggestion-btn" onclick="processCommand('party')">PARTY</button>
+                        <button class="suggestion-btn" onclick="processCommand('marvin')">TALK TO MARVIN</button>
+                    </div>
+                    <div class="command-line">
+                        <span class="prompt">></span>
+                        <input type="text" id="command-input" placeholder="Enter command..." autocomplete="off">
+                    </div>
+                `;
+                document.getElementById('command-input').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        processCommand(this.value.toLowerCase().trim());
+                        this.value = '';
+                    }
+                });
+                return;
+            }
+
+            const response = responses[cmd];
+            
+            if (response) {
+                const html = `
+                    <div class="output-line">
+                        <div class="output-line entry-title">/// ${response.title} ///</div>
+                        <div class="output-line entry-content"><p>${response.content}</p></div>
+                    </div>
+                `;
+                
+                const container = document.createElement('div');
+                container.innerHTML = html;
+                content.insertBefore(container, content.querySelector('.suggestions'));
+                content.scrollTop = content.scrollHeight;
+            } else if (cmd && cmd.length > 0) {
+                const html = `
+                    <div class="output-line">
+                        <div class="output-line entry-content">
+                            <p>That entry is currently unavailable.<br>
+                            <span class="marvin">"I've been walking through empty sections for ten million years. Would you like to see one?"</span></p>
+                        </div>
+                    </div>
+                `;
+                const container = document.createElement('div');
+                container.innerHTML = html;
+                content.insertBefore(container, content.querySelector('.suggestions'));
+                content.scrollTop = content.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

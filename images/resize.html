@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const img = new Image();
+img.onload = () => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 512;
+    canvas.height = 512;
+    ctx.drawImage(img, 0, 0, 512, 512);
+    window.result = canvas.toDataURL('image/png');
+    console.log('Image loaded and resized');
+};
+img.onerror = () => {
+    console.log('Image failed to load');
+};
+img.src = 'avatar.png';
+</script>
+</body>
+</html>
